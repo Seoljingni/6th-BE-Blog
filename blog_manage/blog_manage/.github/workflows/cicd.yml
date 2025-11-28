@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ '설지은/develop' ]   # 트리거!!
+    branches: [ '설지은/main' ]   # 트리거!!
 
 jobs:
   deploy:
