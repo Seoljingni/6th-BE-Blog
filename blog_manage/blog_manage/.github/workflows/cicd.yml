@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ '설지은/main' ]   # 트리거!!
+    branches: [ '설지은/main' ]   # 강제 트리거를 위한 주석
 
 jobs:
   deploy:
