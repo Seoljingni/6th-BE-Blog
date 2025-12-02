@@ -44,7 +44,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./blog_manage/docker-compose.yml"
-          target: "~/app/blog_manage"
+          target: "~/app" # Corrected: scp-action will place it at ~/app/blog_manage/docker-compose.yml
 
       - name: Run docker-compose on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -53,7 +53,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/app/blog_manage
+            mkdir -p ~/app/blog_manage # Ensure the full path exists
+            cd ~/app/blog_manage # Change directory to where the file actually is
             export DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
             export DB_DATABASE=${{ secrets.DB_DATABASE }}
             export DB_USER=${{ secrets.DB_USER }}
