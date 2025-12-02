@@ -24,11 +24,21 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./blog_manage/gradlew
 
-      # Create application.yml from GitHub Secret
+      # Create application.yml from secret
       - name: Create application.yml
         run: |
           mkdir -p ./blog_manage/src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" > ./blog_manage/src/main/resources/application.yml
+        shell: bash
+
+      # Create .env from secrets
+      - name: Create .env
+        run: |
+          mkdir -p ./blog_manage
+          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" > ./blog_manage/.env
+          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> ./blog_manage/.env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> ./blog_manage/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./blog_manage/.env
         shell: bash
 
       # Build with Gradle
@@ -43,18 +53,15 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
 
-      # Copy docker-compose.yml, Dockerfile, .env to EC2
-      - name: Copy app files to EC2
+      # Copy docker-compose.yml to EC2
+      - name: Copy docker-compose to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: |
-            ./blog_manage/docker-compose.yml
-            ./blog_manage/Dockerfile
-            ./blog_manage/.env
-          target: "~/app/blog_manage"
+          source: "./blog_manage/docker-compose.yml"
+          target: "~/app"
 
       # Run docker-compose on EC2
       - name: Run docker-compose on EC2
@@ -64,6 +71,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/app/blog_manage
+            mkdir -p ~/app
+            cd ~/app
             docker-compose down || true
             docker-compose up -d --build
