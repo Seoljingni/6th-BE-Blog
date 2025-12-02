@@ -14,7 +14,7 @@ services:
       - db-data:/var/lib/mysql
 
   app:
-    build: .
+    image: ${IMAGE_NAME}
     container_name: leets-app
     depends_on:
       - db
