@@ -58,7 +58,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./blog_manage/docker-compose.yml"
-          target: "~/app/docker-compose.yml" # Explicitly set the destination file path
+          target: "~/app" # Revert to this, letting scp create the subdirectory
 
       # 9. Deploy to EC2
       - name: Deploy to EC2
@@ -68,7 +68,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/app
+            mkdir -p ~/app/blog_manage # Ensure the full path exists
+            cd ~/app/blog_manage # CD into the subdirectory created by scp
             export IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/blog-app:latest
             export DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
             export DB_DATABASE=${{ secrets.DB_DATABASE }}
