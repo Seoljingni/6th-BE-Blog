@@ -46,11 +46,12 @@ jobs:
       # Copy docker-compose.yml to EC2
       - name: Copy docker-compose to EC2
         uses: appleboy/scp-action@v0.1.7
+        working-directory: ./blog_manage
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./blog_manage/docker-compose.yml"
+          source: "docker-compose.yml"
           target: "~/app"
 
       # Run docker-compose on EC2
@@ -63,8 +64,5 @@ jobs:
           script: |
             mkdir -p ~/app
             cd ~/app
-            echo "--- Listing files in ~/app ---"
-            ls -la
-            echo "------------------------------"
             docker-compose down || true
             docker-compose up -d --build
