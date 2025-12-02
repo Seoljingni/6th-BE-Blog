@@ -9,41 +9,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout source code
       - name: Checkout source code
         uses: actions/checkout@v3
 
-      # Set up JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: 17
 
-      # Make gradlew executable
       - name: Make gradlew executable
         run: chmod +x ./blog_manage/gradlew
 
-      # Create application.yml from secret
       - name: Create application.yml
         run: |
           mkdir -p ./blog_manage/src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" > ./blog_manage/src/main/resources/application.yml
         shell: bash
 
-      # Build with Gradle
       - name: Build with Gradle
         run: ./gradlew build -x test
         working-directory: ./blog_manage
 
-      # Build Docker image
       - name: Build Docker image
         run: docker build -t blog-app:latest .
         working-directory: ./blog_manage
         env:
           DOCKER_BUILDKIT: 1
 
-      # Copy docker-compose.yml to EC2
       - name: Copy docker-compose to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -51,9 +44,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "./blog_manage/docker-compose.yml"
-          target: "~/app"
+          target: "~/app/blog_manage"
 
-      # Run docker-compose on EC2 with environment variables from GitHub Secrets
       - name: Run docker-compose on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -61,8 +53,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            mkdir -p ~/app
-            cd ~/app
+            cd ~/app/blog_manage
             export DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
             export DB_DATABASE=${{ secrets.DB_DATABASE }}
             export DB_USER=${{ secrets.DB_USER }}
