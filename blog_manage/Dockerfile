@@ -7,7 +7,7 @@ COPY src ./src
 RUN gradle build -x test
 
 # Stage 2: Create the final image
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
