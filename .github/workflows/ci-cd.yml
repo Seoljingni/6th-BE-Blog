@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout
+      # Checkout source code
       - name: Checkout source code
         uses: actions/checkout@v3
 
@@ -29,16 +29,6 @@ jobs:
         run: |
           mkdir -p ./blog_manage/src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" > ./blog_manage/src/main/resources/application.yml
-        shell: bash
-
-      # Create .env from secrets
-      - name: Create .env
-        run: |
-          mkdir -p ./blog_manage
-          echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" > ./blog_manage/.env
-          echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> ./blog_manage/.env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> ./blog_manage/.env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./blog_manage/.env
         shell: bash
 
       # Build with Gradle
@@ -63,7 +53,7 @@ jobs:
           source: "./blog_manage/docker-compose.yml"
           target: "~/app"
 
-      # Run docker-compose on EC2
+      # Run docker-compose on EC2 with environment variables from GitHub Secrets
       - name: Run docker-compose on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -73,5 +63,9 @@ jobs:
           script: |
             mkdir -p ~/app
             cd ~/app
+            export DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
+            export DB_DATABASE=${{ secrets.DB_DATABASE }}
+            export DB_USER=${{ secrets.DB_USER }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             docker-compose down || true
             docker-compose up -d --build
